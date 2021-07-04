@@ -41,7 +41,7 @@ if (!function_exists("assurePaths")) {
         checkOrCreateDirectory($buildPath . "models");
         checkOrCreateDirectory($buildPath . "dtos");
         checkOrCreateDirectory($buildPath . "sqls");
-        // checkOrCreateDirectory($buildPath . "interfaces");
+        checkOrCreateDirectory($buildPath . "interfaces");
     }
 }
 
@@ -68,6 +68,7 @@ if (!function_exists("generateNameFor")) {
         $result['mModel'] =  $cappedName . 'Model';
         $result['tModel'] =  $entity . 'Model';
         $result['mDto'] = $cappedName . 'Dto';
+        $result['filterDto'] = $cappedName . 'FilterDto';
         $result['mInterface'] = $cappedName;
         $result['mSqls'] = $cappedName . 'Sqls';
         $result['tSqls'] = $entity . 'Sqls';
@@ -88,12 +89,18 @@ if (!function_exists("generateImportsFor")) {
 }
 
 if (!function_exists("getRouteData")) {
-    function getRouteData($resourseName, $nameFor, $imports)
+    function getRouteData($resourseName, $nameFor, $imports, $doAuthentication)
     {
         $cappedName = ucfirst($resourseName);
+        $authMiddleware = '';
+        if ($doAuthentication) {
+            $authMiddleware = 'import authMiddleware from \'../middlewares/auth.middleware\';';
+        }
+
         $data = ''
             . 'import { Router } from \'express\';
 import Route from \'../interfaces/routes.interface\';
+' . $authMiddleware . '
 import validationMiddleware from \'../middlewares/validation.middleware\';
 ' . $imports['controller'] . '
 ' . $imports['dto'] . '
@@ -108,11 +115,11 @@ class ' . $nameFor['mRoute'] . ' implements Route {
 	}
 		
 	private initializeRoutes() {
-		this.router.get(`${this.path}`, this.' . $nameFor['tController'] . '.get' . $cappedName . 's);
-		this.router.get(`${this.path}/:id(\\\d+)`, this.' . $nameFor['tController'] . '.get' . $cappedName . 'ById);
-		this.router.post(`${this.path}`, validationMiddleware(' . $nameFor['mDto'] . ', \'body\'), this.' . $nameFor['tController'] . '.create' . $cappedName . ');
-		this.router.put(`${this.path}/:id(\\\d+)`, validationMiddleware(' . $nameFor['mDto'] . ', \'body\', true), this.' . $nameFor['tController'] . '.update' . $cappedName . ');
-		this.router.delete(`${this.path}/:id(\\\d+)`, this.' . $nameFor['tController'] . '.delete' . $cappedName . ');
+		this.router.get(`${this.path}`,' . (($doAuthentication) ? ' authMiddleware,' : '') . ' this.' . $nameFor['tController'] . '.get' . $cappedName . 's);
+		this.router.get(`${this.path}/:id(\\\d+)`,' . (($doAuthentication) ? ' authMiddleware,' : '') . ' this.' . $nameFor['tController'] . '.get' . $cappedName . 'ById);
+		this.router.post(`${this.path}`,' . (($doAuthentication) ? ' authMiddleware,' : '') . ' validationMiddleware(' . $nameFor['mDto'] . ', \'body\'), this.' . $nameFor['tController'] . '.create' . $cappedName . ');
+		this.router.put(`${this.path}/:id(\\\d+)`,' . (($doAuthentication) ? ' authMiddleware,' : '') . ' validationMiddleware(' . $nameFor['mDto'] . ', \'body\', true), this.' . $nameFor['tController'] . '.update' . $cappedName . ');
+		this.router.delete(`${this.path}/:id(\\\d+)`,' . (($doAuthentication) ? ' authMiddleware,' : '') . ' this.' . $nameFor['tController'] . '.delete' . $cappedName . ');
 	}
 }
 		
@@ -123,7 +130,7 @@ export default ' . $nameFor['mRoute'] . ';
 }
 
 if (!function_exists("getModelData")) {
-    function getModelData($resourseName, $params, $imports, $nameFor, $options = false)
+    function getModelData($resourseName, $params, $imports, $nameFor, $pathTo, $options = false)
     {
         $cappedResourseName = ucfirst($resourseName);
         $tableName = $resourseName;
@@ -134,22 +141,31 @@ if (!function_exists("getModelData")) {
         }
         $parameterDeclarations = '';
         $parameterInitializations = '';
+        $whereConditions = '';
 
         if (!empty($params)) {
             foreach ($params as $param) {
+
                 $parameterDeclarations .= ('  
 public ' . ($param->fieldName ? $param->fieldName : $param->name) . ': ' . $param->type . ';');
                 $parameterInitializations .= ('
 ' . '       ' . $resourseName . 'Data.' . $param->name . ' ? this.' . ($param->fieldName ? $param->fieldName : $param->name) . ' = ' . $resourseName . 'Data.' . $param->name . ' : "";');
+                $whereConditions .= ('
+                if (filterQuery.' . $param->name . ') {
+                    whereCondition.push(`' . $tableName . '.' . ($param->fieldName ? $param->fieldName : $param->name) . ' = ' . (($param->type == "number") ? '' : '\'') . '${filterQuery.' . $param->name . '}' . (($param->type == "number") ? '' : '\'') . '`);
+                }
+                ');
             }
         }
 
         $data = ''
-            . $imports['dto'] . '
+
+            . 'import { ' . $nameFor['mDto'] . ', ' . $nameFor['filterDto'] . ' } from \'../' . $pathTo['dto'] . '\';
 ' . $imports['sql'] . '
 ' . 'import { MysqlResponse, MysqlService } from \'../services/mysql.service\';
+import { isEmpty } from \'../utils/util\';
 
-const tableName = "' . $tableName . 's";
+const tableName = "' . $tableName . '";
 const mysqlService = new MysqlService();
 const ' . $nameFor['tSqls'] . ' = new ' . $nameFor['mSqls'] . '();
 
@@ -167,7 +183,7 @@ constructor(' . $resourseName . 'Data?: ' . $cappedResourseName . 'Dto) {
 
 public async create' . $cappedResourseName . '(' . $resourseName . 'Data: ' . $nameFor['mModel'] . '): Promise<MysqlResponse> {
     const create' . $cappedResourseName . 'Query = `INSERT INTO ${tableName} SET ?`;
-    const ' . $resourseName . 'Inserted: MysqlResponse = await mysqlService.create(create' . $cappedResourseName . 'Query, ' . $resourseName . 'Data);
+    const ' . $resourseName . 'Inserted: MysqlResponse = await mysqlService.query(create' . $cappedResourseName . 'Query, ' . $resourseName . 'Data);
     if (' . $resourseName . 'Inserted && ' . $resourseName . 'Inserted.status && ' . $resourseName . 'Inserted.insertId) {
         return this.get' . $cappedResourseName . 'ById(' . $resourseName . 'Inserted.insertId);
     }
@@ -175,45 +191,54 @@ public async create' . $cappedResourseName . '(' . $resourseName . 'Data: ' . $n
 }
 
 public async update' . $cappedResourseName . 'ById(' . $resourseName . 'Id: number, ' . $resourseName . 'Data: ' . $nameFor['mModel'] . '): Promise<MysqlResponse> {
-    const update' . $cappedResourseName . 'Query = `UPDATE ${tableName} SET ? WHERE id = ${' . $resourseName . 'Id}`;
-    const ' . $resourseName . 'Updated: MysqlResponse = await mysqlService.create(update' . $cappedResourseName . 'Query, ' . $resourseName . 'Data);
+    const update' . $cappedResourseName . 'Query = `UPDATE ${tableName} SET ? WHERE ' . $tableName . '.id = ${' . $resourseName . 'Id}`;
+    const ' . $resourseName . 'Updated: MysqlResponse = await mysqlService.query(update' . $cappedResourseName . 'Query, ' . $resourseName . 'Data);
     if (' . $resourseName . 'Updated && ' . $resourseName . 'Updated.status && ' . $resourseName . 'Updated.affectedRows && ' . $resourseName . 'Updated.affectedRows > 0) {
         return this.get' . $cappedResourseName . 'ById(' . $resourseName . 'Id);
     }
     return ' . $resourseName . 'Updated;
 }
 
-public async getAll' . $cappedResourseName . 's(): Promise<MysqlResponse> {
+public async getAll' . $cappedResourseName . 's(filterQuery: ' . $nameFor['filterDto'] . '): Promise<MysqlResponse> {
     let whereSqls = \'\';
+    let whereCondition = [];
     let limitSql = \'\';
     let offset = 0;
     let limit = 0;
+    let orderBy = ``;
+
+    if (!isEmpty(filterQuery)) {
+
+        ' . $whereConditions . '
+
+        whereSqls = whereCondition.join(" AND ");
+    }
 
     if(limit){
-        limitSql = \' limit \' + offset + \',\' + limit;
+        limitSql = ` limit ${offset}, ${limit}`;
     }
     const select' . $cappedResourseName . 'Query = ' . $nameFor['tSqls'] . '.generalSelect;
-    const modifiedSelect' . $cappedResourseName . 'Query = select' . $cappedResourseName . 'Query + `${whereSqls} ${limitSql}`;
-    const ' . $resourseName . 'Selected: MysqlResponse = await mysqlService.create(modifiedSelect' . $cappedResourseName . 'Query);
+    const modifiedSelect' . $cappedResourseName . 'Query = select' . $cappedResourseName . 'Query + `${whereSqls} ${orderBy} ${limitSql}`;
+    const ' . $resourseName . 'Selected: MysqlResponse = await mysqlService.query(modifiedSelect' . $cappedResourseName . 'Query);
     return ' . $resourseName . 'Selected;
 }
 
 public async get' . $cappedResourseName . 'ById(' . $resourseName . 'Id: number): Promise<MysqlResponse> {
     const select' . $cappedResourseName . 'Query = ' . $nameFor['tSqls'] . '.detailSelect;
-    const modifiedSelect' . $cappedResourseName . 'Query = select' . $cappedResourseName . 'Query + `WHERE id = ${' . $resourseName . 'Id}`;
-    const ' . $resourseName . 'Selected: MysqlResponse = await mysqlService.create(modifiedSelect' . $cappedResourseName . 'Query);
+    const modifiedSelect' . $cappedResourseName . 'Query = select' . $cappedResourseName . 'Query + `WHERE ' . $tableName . '.id = ${' . $resourseName . 'Id}`;
+    const ' . $resourseName . 'Selected: MysqlResponse = await mysqlService.query(modifiedSelect' . $cappedResourseName . 'Query);
     return ' . $resourseName . 'Selected;
 }
 
 public async delete' . $cappedResourseName . '(' . $resourseName . 'Id: number): Promise<MysqlResponse> {
-    const delete' . $cappedResourseName . 'Query = `DELETE FROM ${tableName} WHERE id = ${' . $resourseName . 'Id}`;
-    const ' . $resourseName . 'Deleted: MysqlResponse = await mysqlService.create(delete' . $cappedResourseName . 'Query);
+    const delete' . $cappedResourseName . 'Query = `DELETE FROM ${tableName} WHERE ' . $tableName . '.id = ${' . $resourseName . 'Id}`;
+    const ' . $resourseName . 'Deleted: MysqlResponse = await mysqlService.query(delete' . $cappedResourseName . 'Query);
     return ' . $resourseName . 'Deleted;
 }
 
 public async deleteAll' . $cappedResourseName . 's(): Promise<MysqlResponse> {
     const delete' . $cappedResourseName . 'sQuery = `DELETE * FROM ${tableName}`;
-    const ' . $resourseName . 'sDeleted: MysqlResponse = await mysqlService.create(delete' . $cappedResourseName . 'sQuery);
+    const ' . $resourseName . 'sDeleted: MysqlResponse = await mysqlService.query(delete' . $cappedResourseName . 'sQuery);
     return ' . $resourseName . 'sDeleted;
 }
 
@@ -231,7 +256,7 @@ if (!function_exists("getDtoData")) {
         if (!empty($params)) {
             foreach ($params as $param) {
                 $parameterDeclarations .= ('
-	public ' . $param->name . ': ' . $param->type . ';
+	public ' . $param->name . '?: ' . $param->type . ';
 			');
             }
         }
@@ -243,6 +268,11 @@ import { IsNotEmpty, IsString } from \'class-validator\';
 export class ' . $nameFor['mDto'] . ' {
 ' . $parameterDeclarations . '
 
+}
+
+export class ' . $nameFor['filterDto'] . ' {
+    ' . $parameterDeclarations . '
+    
 }
 
 ';
@@ -279,10 +309,26 @@ if (!function_exists("getSqlData")) {
             }
         }
 
+        $selectDeclarations = '';
+
+        if (!empty($params)) {
+            foreach ($params as $param) {
+
+                $selectDeclarations .= ('
+                ' . $tableName . '.' . $param->fieldName . ' AS ' . $param->name . ',');
+            }
+        }
+
+        $selectDeclarations=substr_replace($selectDeclarations, "", -1);
+
         $data = ''
             . 'export class ' . $nameFor['mSqls'] . ' {
-    public generalSelect: string = "SELECT * FROM ' . $tableName . ' ";
-    public detailSelect: string = "SELECT * FROM ' . $tableName . ' ";
+    public generalSelect: string = `SELECT ' . $selectDeclarations . ' 
+    FROM 
+    ' . $tableName . ' `;
+    public detailSelect: string = `SELECT ' . $selectDeclarations . '
+     FROM 
+     ' . $tableName . ' `;
 }
   ';
         return $data;
@@ -290,13 +336,14 @@ if (!function_exists("getSqlData")) {
 }
 
 if (!function_exists("getControllerData")) {
-    function getControllerData($resourseName, $params, $imports, $nameFor)
+    function getControllerData($resourseName, $params, $imports, $nameFor, $pathTo)
     {
         $cappedResourseName = ucfirst($resourseName);
 
         $data = ''
             . 'import { NextFunction, Request, Response } from \'express\';
 import MisException from \'../exceptions/MisException\';
+import { ' . $nameFor['mDto'] . ', ' . $nameFor['filterDto'] . ' } from \'../' . $pathTo['dto'] . '\';
 ' . $imports['model'] . '
 
 class ' . $nameFor['mController'] . ' {
@@ -304,7 +351,8 @@ public ' . $nameFor['tModel'] . ' = new ' . $nameFor['mModel'] . '();
 
 public get' . $cappedResourseName . 's = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const findAll' . $cappedResourseName . 'sData = await this.' . $nameFor['tModel'] . '.getAll' . $cappedResourseName . 's();
+        const ' . $resourseName . 'Filter: ' . $cappedResourseName . 'FilterDto = req.query as ' . $cappedResourseName . 'FilterDto;
+        const findAll' . $cappedResourseName . 'sData = await this.' . $nameFor['tModel'] . '.getAll' . $cappedResourseName . 's(' . $resourseName . 'Filter);
         if (findAll' . $cappedResourseName . 'sData && findAll' . $cappedResourseName . 'sData.status && findAll' . $cappedResourseName . 'sData.result && findAll' . $cappedResourseName . 'sData.result.length > 0) {
             const result: any = findAll' . $cappedResourseName . 'sData.result;
             next({ status: 1, data: result })
@@ -334,7 +382,8 @@ public get' . $cappedResourseName . 'ById = async (req: Request, res: Response, 
 
 public create' . $cappedResourseName . ' = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const ' . $resourseName . 'Data = new ' . $cappedResourseName . 'Model(req.body);
+        let ' . $resourseName . 'Dto = req.body as ' . $nameFor['mDto'] . ';
+        const ' . $resourseName . 'Data = new ' . $cappedResourseName . 'Model(' . $resourseName . 'Dto);
         const insert' . $cappedResourseName . 'Data = await this.' . $nameFor['tModel'] . '.create' . $cappedResourseName . '(' . $resourseName . 'Data);
         if (insert' . $cappedResourseName . 'Data && insert' . $cappedResourseName . 'Data.status && insert' . $cappedResourseName . 'Data.result && insert' . $cappedResourseName . 'Data.result.length > 0) {
             const inserted' . $cappedResourseName . 's: any = insert' . $cappedResourseName . 'Data.result;
