@@ -199,12 +199,12 @@ public async update' . $cappedResourseName . 'ById(' . $resourseName . 'Id: numb
     return ' . $resourseName . 'Updated;
 }
 
-public async getAll' . $cappedResourseName . 's(filterQuery: ' . $nameFor['filterDto'] . '): Promise<MysqlResponse> {
+public async getAll' . $cappedResourseName . 's(filterQuery: ' . $nameFor['filterDto'] . '): Promise<MysqlResponse[]> {
     let whereSqls = \'\';
     let whereCondition = [];
     let limitSql = \'\';
-    let offset = 0;
-    let limit = 0;
+    let offset = filterQuery?.offset ?? 0;
+    let limit = filterQuery?.limit ?? 0;
     let orderBy = ``;
 
     if (!isEmpty(filterQuery)) {
@@ -214,12 +214,21 @@ public async getAll' . $cappedResourseName . 's(filterQuery: ' . $nameFor['filte
         whereSqls = whereCondition.join(" AND ");
     }
 
+    if (!isEmpty(whereSqls)) {
+        whereSqls = ` WHERE ` + whereSqls;
+    }
+
     if(limit){
         limitSql = ` limit ${offset}, ${limit}`;
     }
+
+    let ' . $resourseName . 'Selected: MysqlResponse[]=[];
+    const countSelect' . $cappedResourseName . 'Query = ' . $nameFor['tSqls'] . '.countselect;
+    const modifiedCountSelect' . $cappedResourseName . 'Query = countSelect' . $cappedResourseName . 'Query + `${whereSqls} `;
+    ' . $resourseName . 'Selected[0] = await mysqlService.query(modifiedCountSelect' . $cappedResourseName . 'Query);
     const select' . $cappedResourseName . 'Query = ' . $nameFor['tSqls'] . '.generalSelect;
     const modifiedSelect' . $cappedResourseName . 'Query = select' . $cappedResourseName . 'Query + `${whereSqls} ${orderBy} ${limitSql}`;
-    const ' . $resourseName . 'Selected: MysqlResponse = await mysqlService.query(modifiedSelect' . $cappedResourseName . 'Query);
+    ' . $resourseName . 'Selected[1] = await mysqlService.query(modifiedSelect' . $cappedResourseName . 'Query);
     return ' . $resourseName . 'Selected;
 }
 
@@ -272,7 +281,10 @@ export class ' . $nameFor['mDto'] . ' {
 
 export class ' . $nameFor['filterDto'] . ' {
     ' . $parameterDeclarations . '
-    
+
+    public offset?: number;
+
+	public limit?: number;
 }
 
 ';
@@ -323,6 +335,10 @@ if (!function_exists("getSqlData")) {
 
         $data = ''
             . 'export class ' . $nameFor['mSqls'] . ' {
+    public countselect: string = `SELECT 
+    count(' . $tableName . '.id) AS totalResults  
+    FROM 
+    ' . $tableName . ' `;
     public generalSelect: string = `SELECT ' . $selectDeclarations . ' 
     FROM 
     ' . $tableName . ' `;
@@ -353,9 +369,9 @@ public get' . $cappedResourseName . 's = async (req: Request, res: Response, nex
     try {
         const ' . $resourseName . 'Filter: ' . $cappedResourseName . 'FilterDto = req.query as ' . $cappedResourseName . 'FilterDto;
         const findAll' . $cappedResourseName . 'sData = await this.' . $nameFor['tModel'] . '.getAll' . $cappedResourseName . 's(' . $resourseName . 'Filter);
-        if (findAll' . $cappedResourseName . 'sData && findAll' . $cappedResourseName . 'sData.status && findAll' . $cappedResourseName . 'sData.result && findAll' . $cappedResourseName . 'sData.result.length > 0) {
-            const result: any = findAll' . $cappedResourseName . 'sData.result;
-            next({ status: 1, data: result })
+        if (findAll' . $cappedResourseName . 'sData && findAll' . $cappedResourseName . 'sData[0].status && findAll' . $cappedResourseName . 'sData[0].result && findAll' . $cappedResourseName . 'sData[0].result.length > 0) {
+            const result: any = findAll' . $cappedResourseName . 'sData[1].result;
+            next({ status: 1, data: result, infoDtls: { totalResults: findAll' . $cappedResourseName . 'sData[0].result[0].totalResults } })
         } else {
             next({ status: 0, error: new MisException("", "' . $resourseName . 's not found") });
         }
