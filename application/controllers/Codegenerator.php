@@ -33,83 +33,168 @@ class Codegenerator extends CI_Controller
 		parent::__construct();
 
 		$this->load->helper("My_node_code_helper");
+
+		$this->load->model("Commonmodel", "cm");
 	}
 
 	public function index($parameter = false)
 	{
 		echo "Welcome to Node code generator.";
 		assurePaths($this->buildPath);
+		$da = $this->cm->getTables();
+		var_dump($da);
 		$params = array(
 			new Param("id", "number", "id"),
+			new Param("name", "string", "name"),
+			new Param("description", "string", "description"),
 
-			// new Param("code", "string", "code"),
-			// new Param("name", "string", "name"),
-			new Param("datetime", "string", "datetime"),
+			new Param("userId", "number", "muser_id"),
+			// new Param("accountuserId", "number", "maccountuser_id"),
+
+
+			// new Param("credId", "number", "tcred_id"),
+			// new Param("credtagId", "number", "mcredtag_id"),
+			// new Param("credmasterId", "number", "mcredmaster_id"),
+			// new Param("parentId", "number", "tparent_id"),
+
+			// new Param("notificationId", "number", "tnotification_id"),
+			// new Param("batchNo", "number", "batch_no"),
+
+			// new Param("data", "string", "data"),
+			// new Param("value", "string", "value"),
+			// new Param("sentAt", "string", "senT_at"),
+
+			// new Param("username", "string", "username"),
+			// new Param("password", "string", "password"),
+			// new Param("host", "string", "host"),
+			// new Param("service", "string", "service"),
+			// new Param("port", "string", "port"),
+			// new Param("entityId", "string", "entity_id"),
+			// new Param("senderId", "string", "sender_id"),
+			// new Param("authKey", "string", "auth_key"),
+			// new Param("authSecret", "string", "auth_secret"),
+			// new Param("route", "number", "route"),
+
+
+			// new Param("notificationtypeId", "number", "mnotificationtype_id"),
+			// new Param("configId", "number", "tconfig_id"),
+			// new Param("subject", "string", "subject"),
+			// new Param("body", "string", "body"),
+			// new Param("template", "string", "template"),
+			// new Param("data", "string", "data"),
+
+			// new Param("addressId", "number", "maddress_id"),
 			// new Param("title", "string", "title"),
 			// new Param("description", "string", "description"),
+			// new Param("thumbUrl", "string", "thumb_url"),
+			// new Param("coverUrl", "string", "cover_url"),
 
-			// new Param("worthAmount", "number", "worth_amount"),
-			// new Param("percentageOff", "number", "percentage_off"),
-			// new Param("totalProvided", "number", "total_provided"),
-			// new Param("assignedToUsers", "number", "assigned_to_users"),
-			// new Param("used", "number", "used"),
+			// new Param("zeropropertytypeId", "number", "tzeropropertytype_id"),
+
+			// new Param("publishedDate", "string", "published_date"),
+			// new Param("toDate", "string", "to_date"),
+			// new Param("priority", "number", "priority"),
+			// new Param("isFeatures", "number", "is_features"),
+
+			// new Param("info1", "string", "info1"),
+			// new Param("info2", "string", "info2"),
+			// new Param("info3", "string", "info3"),
+			// new Param("info4", "string", "info4"),
+			// new Param("info5", "string", "info5"),
+			// new Param("viewCount", "number", "view_counts"),
+			// new Param("contactCount", "number", "contact_counts"),
 
 
-			// new Param("companyName", "string", "company_name"),
-			// new Param("companyAddress", "string", "company_address"),
-			// new Param("terms", "string", "terms"),
-			new Param("userId", "number", "muser_id"),
+			// new Param("name", "string", "name"),
+			// new Param("zeroserviceId", "number", "tzeroservice_id"),
+			// new Param("parentId", "number", "tparent_id"),
 
-			new Param("pointsEarned", "number", "points_earned"),
-			new Param("pointsSpent", "number", "points_spent"),
-			new Param("amountReceived", "number", "amount_received"),
-			new Param("amountSpent", "number", "amount_spent"),
-			new Param("couponId", "number", "mcoupon_id"),
-			new Param("couponCode", "string", "coupon_code"),
-			new Param("couponWorth", "number", "coupon_worth"),
+			// new Param("isVisible", "number", "is_visible"),
+			// new Param("label", "string", "label"),
+			// new Param("showLabel", "number", "show_label"),
+			// new Param("value", "string", "value"),
+			// new Param("municipalityId", "number", "mmunicipality_id"),
+			// new Param("isEnabled", "number", "is_enabled"),
 
-			// new Param("subscriptionplanId", "number", "msubscriptionplan_id"),
-			new Param("validFromDate", "string", "valid_from_date"),
-			new Param("validToDate", "string", "valid_to_date"),
-			new Param("referedById", "number", "refered_by_id"),
-			new Param("referedForId", "number", "refered_for_id"),
-			new Param("wallettransactiontypeId", "number", "mwallettransactiontype_id"),
+			// new Param("value1", "string", "value_1"),
+			// new Param("value2", "string", "value_2"),
+			// new Param("value3", "string", "value_3"),
+			// new Param("value4", "string", "value_4"),
+			// new Param("value5", "string", "value_5"),
+			// new Param("description", "string", "description"),
+			// new Param("roleId", "number", "mrole_id"),
 
-			// new Param("validityInDays", "number", "validity_in_days"),
-			
-			// new Param("points", "number", "points"),
-			// new Param("amount", "number", "amount"),
-			// new Param("maxRedeemPercentage", "number", "max_redeem_percentage"),
 
-			// new Param("freeAmount", "number", "free_amount"),
-			// new Param("amountToPointsGain", "number", "amount_to_points_gain"),
-			// new Param("amountToPointsSpent", "number", "amount_to_points_spent"),
-			// new Param("redemptionStartMinPoints", "number", "redemption_start_min_points"),
-			// new Param("insuranceCoverage", "number", "insurance_coverage"),
-			// new Param("discountCouponWorth", "number", "discount_coupon_worth"),
 
-			// new Param("transactionId", "string", "ttransaction_id"),
-			// new Param("voucherNo", "string", "voucher_number"),
-			// new Param("cashDebit", "number", "cash_debit"),
-			// new Param("cashCredit", "number", "cash_credit"),
-			// new Param("bankAccountId", "number", "mbankaccount_id"),
-			// new Param("bankCredit", "number", "bank_credit"),
-			// new Param("bankDebit", "number", "bank_debit"),
-			// new Param("fixedDeposit", "number", "fixed_deposit"),
-			// new Param("date", "string", "date"),
-			// new Param("financialYearId", "number", "mfinancialyear_id"),
-			// new Param("tenderId", "number", "mtender_id"),
-			// new Param("workorderId", "number", "tworkorder_id"),
-			// new Param("employeeId", "number", "temployee_id"),
+			// new Param("memberSince", "string", "membersince"),
+			// new Param("firstName", "string", "first_name"),
+			// new Param("middleName", "string", "middle_name"),
+			// new Param("lastName", "string", "last_name"),
+
+			// new Param("code", "string", "code"),
+
+			// new Param("dateOfbirth", "string", "date_of_birth"),
+			// new Param("genderId", "number", "mgender_id"),
+			// new Param("email1", "string", "email1"),
+			// new Param("email2", "string", "email2"),
+			// new Param("phone1", "string", "phone1"),
+			// new Param("phone2", "string", "phone2"),
+			// new Param("username", "string", "username"),
+			// new Param("password", "string", "password"),
+			// new Param("father", "string", "father"),
+			// new Param("mother", "string", "mother"),
+			// new Param("qualificationId", "number", "mqualification_id"),
+			// new Param("occupationId", "number", "moccupation_id"),
+			// new Param("bloodgroupId", "number", "mbloodgroup_id"),
+			// new Param("contact1", "string", "contact1"),
+			// new Param("contact2", "string", "contact2"),
+			// new Param("email1", "string", "email1"),
+			// new Param("addressline1", "string", "addressline1"),
+			// new Param("addressline2", "string", "addressline2"),
+			// new Param("city", "string", "city"),
+			// new Param("stateId", "number", "mstate_id"),
+			// new Param("pincode", "string", "pincode"),
+			// new Param("parishId", "number", "mparish_id"),
+			// new Param("sccId", "number", "scc_id"),
+			// new Param("familyId", "number", "family_id"),
+			// new Param("memberId", "number", "member_id"),
+
+			// new Param("lastLoginDate", "string", "last_login_date"),
+			// new Param("lastLoginIp", "string", "last_login_ip"),
+			// new Param("lastLoginDevice", "string", "last_login_device"),
+			// new Param("lastLoginLocation", "string", "last_login_location"),
+			// new Param("externalAuthId", "string", "external_auth_id"),
+			// new Param("externalAuthSourceId", "number", "external_auth_source_id"),
+			// new Param("isUsernameVerified", "number", "is_username_verified"),
+			// new Param("usernameVerificationCode", "string", "username_verification_code"),
+			// new Param("resetPasswordCode", "string", "reset_password_code"),
+			// new Param("refreshToken", "string", "refresh_token"),
+
+			// new Param("substationId", "number", "substation_id"),
+			// new Param("institutionId", "number", "institution_id"),
+			// new Param("conventId", "number", "convent_id"),
+			// new Param("associationId", "number", "association_id"),
+			// new Param("sisterId", "number", "sister_id"),
+			// new Param("catechistId", "number", "catechist_id"),
+
+
+			// new Param("isBaptised", "number", "baptism_flag"),
+			// new Param("isCommunion", "number", "communion_flag"),
+			// new Param("isConfirmation", "number", "confirmation_flag"),
+			// new Param("isMarried", "number", "marriage_flag"),
+			// new Param("isVocation", "number", "vocation_flag"),
+			// new Param("isDead", "number", "death_flag"),
+
+			// new Param("mledgerId", "number", "mledger_id"),
+			// new Param("tledgerId", "number", "tledger_id"),
+			// new Param("parishId", "number", "mparish_id"),
 			// new Param("familyId", "number", "mfamily_id"),
 			// new Param("memberId", "number", "mmmeber_id"),
-			// new Param("userId", "number", "muser_id"),
-			// new Param("municipalityId", "number", "mmunicipality_id"),
-			// new Param("date", "string", "date"),
+
 
 			// new Param("remarks", "string", "remarks"),
-			// new Param("isActive", "number", "is_active"),
-			new Param("referenceNo", "string", "reference_no"),
+			// new Param("isActive", "number", "active"),
+			// new Param("referenceNo", "string", "reference_no"),
 
 			// new Param("description", "string", "description"),
 			new Param("createdAt", "string", "created_at"),
@@ -121,7 +206,8 @@ class Codegenerator extends CI_Controller
 			new Param("status", "number", "status"),
 			new Param("astatus", "number", "astatus"),
 		);
-		$this->prepareResourse("wallettransaction", "twallettransactions", $params);
+		
+		// $this->prepareResourse("accountuser", "taccountusers", $params);
 	}
 
 	private function prepareResourse($resourseName, $tableName, $params = [])
@@ -187,35 +273,5 @@ class Codegenerator extends CI_Controller
 		$sqlFile = $this->buildPath . $this->pathFor['sql'] . $this->fileExtension;
 		$filesaved = saveFile($sqlFile, $data);
 		return;
-	}
-
-	private function customPraams()
-	{
-		$array = [
-			new Param("id", "number", "id"),
-
-			new Param("name", "string", "name"),
-
-			new Param("date", "string", "date"),
-
-			new Param("applicationNo", "string", "application_no"),
-
-			new Param("dateOfBirth", "string", "date_birth"),
-			new Param("maritalStatus", "string", "marital_status"),
-			new Param("mobile", "string", "mobile"),
-			new Param("email", "string", "email"),
-
-
-			new Param("referenceNo", "string", "reference_no"),
-			new Param("remarks", "string", "remarks"),
-			new Param("createdAt", "string", "created_at"),
-			new Param("createdBy", "number", "created_by"),
-			new Param("updatedAt", "string", "updated_at"),
-			new Param("updatedBy", "number", "updated_by"),
-			new Param("deletedAt", "string", "deleted_at"),
-			new Param("deletedBy", "number", "deleted_by"),
-			new Param("status", "number", "status"),
-			new Param("astatus", "number", "astatus"),
-		];
 	}
 }
