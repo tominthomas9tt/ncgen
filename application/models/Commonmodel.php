@@ -128,20 +128,19 @@ class Commonmodel extends CI_Model
         $this->db->trans_commit();
     }
 
-    public function getTables(){
-        // $query = $this->db->query("SELECT * FROM information_schema.tables");
+    public function getAllTables()
+    {
         $tabResults = $this->db->select('TABLE_NAME')
-  ->from('INFORMATION_SCHEMA.TABLES')
-  ->where('TABLE_SCHEMA', 'mis_auth')
-//   ->like('TABLE_NAME', 'Demo')
-  ->get()->result_array();
-$tables = array_column($tabResults, 'TABLE_NAME');
-// $result = $query->result_array();
-// return $result;
-return $tables;
+            ->from('INFORMATION_SCHEMA.TABLES')
+            ->where('TABLE_SCHEMA',$this->db->database)
+            ->get()->result_array();
+        $tables = array_column($tabResults, 'TABLE_NAME');
+        return $tables;
     }
 
-    public function getTableStructureData($tableName){
-        $fields = $this->db->field_data('table_name');
+    public function getTableStructure($tableName)
+    {
+        $fields = $this->db->field_data($tableName);
+        return $fields;
     }
 }
