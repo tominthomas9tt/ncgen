@@ -1,0 +1,37 @@
+[33mcommit 5520c490907d30ee2cb59ab013932cadb2a1c164[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/dev[m[33m, [m[1;32mdev[m[33m)[m
+Author: Tomin Thomas <tominthomas9.tt@gmail.com>
+Date:   Mon Aug 15 21:06:52 2022 +0530
+
+    auto generate new Resource from mysql table --completed
+
+[33mcommit 76cf13bea67d90a221f7501e72baf1d6f7255c06[m
+Author: Tomin Thomas <tominthomas9.tt@gmail.com>
+Date:   Mon Aug 8 19:31:31 2022 +0530
+
+    table autodetech implementation in progress
+
+[33mcommit 6f67c91c7041a5eaf72732b8ccf0a3679102e774[m
+Author: Tomin Thomas <tominthomas9.tt@gmail.com>
+Date:   Mon Oct 11 09:10:17 2021 +0530
+
+    helper class updated
+
+[33mcommit 29f2c6c9b55144800ad9906f9ad08558100fbd7c[m
+Author: Tomin Thomas <tominthomas9.tt@gmail.com>
+Date:   Sun Jul 4 18:59:43 2021 +0530
+
+    codemodified
+    with new API generation
+    techniques
+
+[33mcommit 2f4fb0a22368ce893116941a7b071a1ebdb174c1[m
+Author: Tomin Thomas <tominthomas9.tt@gmail.com>
+Date:   Mon Apr 19 11:22:03 2021 +0530
+
+    initial commit
+
+[33mcommit 1cfb72b5b05943c13ca7b6053a5111e22e6f285f[m
+Author: Tomin Thomas <tominthomas9.tt@gmail.com>
+Date:   Thu Feb 25 20:55:09 2021 +0530
+
+    inital commit

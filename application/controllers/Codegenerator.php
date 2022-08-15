@@ -41,7 +41,8 @@ class Codegenerator extends CI_Controller
 	{
 		echo "Welcome to Node code generator.";
 		assurePaths($this->buildPath);
-		$tables = $this->cm->getAllTables();
+		// $tables = $this->cm->getAllTables();
+		$tables = ['ma_code_types1'];
 		foreach ($tables as $table) {
 			$tableName = $table;
 			$resourseName = resourceNameDefiner($tableName, ["ma_"]);
@@ -69,6 +70,7 @@ class Codegenerator extends CI_Controller
 		);
 		$this->generateRouteFor($resourseName);
 		$this->generateControllerFor($resourseName, $params);
+		$this->generateServiceFor($resourseName, $params);
 		$this->generateModel($resourseName, $params, $options);
 		$this->generateDto($resourseName, $params);
 		$this->generateInterface($resourseName, $params);
@@ -88,6 +90,14 @@ class Codegenerator extends CI_Controller
 		$data = getControllerData($resourseName, $params, $this->importFor, $this->nameFor, $this->pathFor);
 		$ControllerFile = $this->buildPath . $this->pathFor['controller'] . $this->fileExtension;
 		$fileSaved = saveFile($ControllerFile, $data);
+		return;
+	}
+
+	private function generateServiceFor($resourseName, $params)
+	{
+		$data = getServiceData($resourseName, $params, $this->importFor, $this->nameFor, $this->pathFor);
+		$serviceFile = $this->buildPath . $this->pathFor['service'] . $this->fileExtension;
+		$fileSaved = saveFile($serviceFile, $data);
 		return;
 	}
 

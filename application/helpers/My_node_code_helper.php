@@ -14,123 +14,128 @@ defined('BASEPATH') or exit('No direct script access allowed');
  ************************************************/
 
 if (!function_exists("resourceNameDefiner")) {
-    function resourceNameDefiner($name, $replaceArray)
-    {
-        $returnName = $name;
-        if (count($replaceArray) > 0) {
-            foreach ($replaceArray as $replaceString) {
-                $returnName = str_replace($replaceString, "", $returnName);
-            }
-        }
-        return $returnName;
+  function resourceNameDefiner($name, $replaceArray)
+  {
+    $returnName = $name;
+    if (count($replaceArray) > 0) {
+      foreach ($replaceArray as $replaceString) {
+        $returnName = str_replace($replaceString, "", $returnName);
+      }
     }
+    return $returnName;
+  }
 }
 
 if (!function_exists("typeDeterminer")) {
-    function typeDeterminer($type)
-    {
-        $numberTypes = ["int", "tinyint", "decimal", "float", "double"];
-        $returnType = 'string';
-        if (in_array($type, $numberTypes)) {
-            $returnType = "number";
-        }
-        return $returnType;
+  function typeDeterminer($type)
+  {
+    $numberTypes = ["int", "tinyint", "decimal", "float", "double"];
+    $returnType = 'string';
+    if (in_array($type, $numberTypes)) {
+      $returnType = "number";
     }
+    return $returnType;
+  }
 }
 
 if (!function_exists("camelize")) {
-    function camelize($input)
-    {
-        return strtolower($input[0]) . substr(str_replace(' ', '', ucwords(preg_replace('/[\s_]+/', ' ', $input))), 1);
-    }
+  function camelize($input)
+  {
+    return strtolower($input[0]) . substr(str_replace(' ', '', ucwords(preg_replace('/[\s_]+/', ' ', $input))), 1);
+  }
 }
 
 if (!function_exists("saveFile")) {
-    function saveFile($path, $data)
-    {
-        $isWritten = file_put_contents($path, $data);
-        return $isWritten;
-    }
+  function saveFile($path, $data)
+  {
+    $isWritten = file_put_contents($path, $data);
+    return $isWritten;
+  }
 }
 
 if (!function_exists("checkOrCreateDirectory")) {
-    function checkOrCreateDirectory($path = false)
-    {
-        $rootPath = FCPATH;
-        $buildPath = $rootPath .  (!empty($path) ? $path : "");
-        if (!file_exists($buildPath)) {
-            mkdir($path, 0777, true);
-        }
-        return $buildPath;
+  function checkOrCreateDirectory($path = false)
+  {
+    $rootPath = FCPATH;
+    $buildPath = $rootPath .  (!empty($path) ? $path : "");
+    if (!file_exists($buildPath)) {
+      mkdir($path, 0777, true);
     }
+    return $buildPath;
+  }
 }
 
 if (!function_exists("assurePaths")) {
-    function assurePaths($buildPath)
-    {
-        checkOrCreateDirectory($buildPath . "routes");
-        checkOrCreateDirectory($buildPath . "controllers");
-        checkOrCreateDirectory($buildPath . "models");
-        checkOrCreateDirectory($buildPath . "dtos");
-        checkOrCreateDirectory($buildPath . "sqls");
-        checkOrCreateDirectory($buildPath . "interfaces");
-    }
+  function assurePaths($buildPath)
+  {
+    checkOrCreateDirectory($buildPath . "routes");
+    checkOrCreateDirectory($buildPath . "controllers");
+    checkOrCreateDirectory($buildPath . "models");
+    checkOrCreateDirectory($buildPath . "dtos");
+    checkOrCreateDirectory($buildPath . "services");
+    checkOrCreateDirectory($buildPath . "sqls");
+    checkOrCreateDirectory($buildPath . "interfaces");
+  }
 }
 
 if (!function_exists("generatePathsFor")) {
-    function generatePathsFor($entity)
-    {
-        $result['route'] = "routes" . "/" . $entity . ".route";
-        $result['controller'] = "controllers" . "/" . $entity . ".controller";
-        $result['model'] = "models" . "/" . $entity . ".model";
-        $result['dto'] = "dtos" . "/" . $entity . ".dto";
-        $result['interface'] = "interfaces" . "/" . $entity . ".interface";
-        $result['sql'] = "sqls" . "/" . $entity . ".sql";
-        return $result;
-    }
+  function generatePathsFor($entity)
+  {
+    $result['route'] = "routes" . "/" . $entity . ".route";
+    $result['controller'] = "controllers" . "/" . $entity . ".controller";
+    $result['model'] = "models" . "/" . $entity . ".model";
+    $result['dto'] = "dtos" . "/" . $entity . ".dto";
+    $result['interface'] = "interfaces" . "/" . $entity . ".interface";
+    $result['service'] = "services" . "/" . $entity . ".service";
+    $result['sql'] = "sqls" . "/" . $entity . ".sql";
+    return $result;
+  }
 }
 
 if (!function_exists("generateNameFor")) {
-    function generateNameFor($entity)
-    {
-        $cappedName = ucfirst($entity);
-        $result['mRoute'] = $cappedName . 'Route';
-        $result['mController'] = $cappedName . 'Controller';
-        $result['tController'] = $entity . 'Controller';
-        $result['mModel'] =  $cappedName . 'Model';
-        $result['tModel'] =  $entity . 'Model';
-        $result['mDto'] = $cappedName . 'Dto';
-        $result['mInterface'] = $cappedName;
-        $result['filterInterface'] = $cappedName . 'Filter';
-        $result['mSqls'] = $cappedName . 'Sqls';
-        $result['tSqls'] = $entity . 'Sqls';
-        return $result;
-    }
+  function generateNameFor($entity)
+  {
+    $cappedName = ucfirst($entity);
+    $result['mRoute'] = $cappedName . 'Route';
+    $result['mController'] = $cappedName . 'Controller';
+    $result['tController'] = $entity . 'Controller';
+    $result['mService'] = $cappedName . 'Service';
+    $result['tService'] = $entity . 'Service';
+    $result['mModel'] =  $cappedName . 'Model';
+    $result['tModel'] =  $entity . 'Model';
+    $result['mDto'] = $cappedName . 'Dto';
+    $result['mInterface'] = $cappedName;
+    $result['filterInterface'] = $cappedName . 'Filter';
+    $result['mSqls'] = $cappedName . 'Sqls';
+    $result['tSqls'] = $entity . 'Sqls';
+    return $result;
+  }
 }
 
 if (!function_exists("generateImportsFor")) {
-    function generateImportsFor($entity, $pathTo, $nameFor)
-    {
-        $result['controller'] = 'import ' . $nameFor['mController'] . ' from \'@' . $pathTo['controller'] . '\';';
-        $result['model'] = 'import ' . $nameFor['mModel'] . ' from \'@' . $pathTo['model'] . '\';';
-        $result['dto'] = 'import { ' . $nameFor['mDto'] . ' } from \'@' . $pathTo['dto'] . '\';';
-        $result['interface'] = 'import ' . $nameFor['mInterface'] . ' from \'@' . $pathTo['interface'] . '\';';
-        $result['sql'] = 'import { ' . $nameFor['mSqls'] . ' } from \'@' . $pathTo['sql'] . '\';';
-        return $result;
-    }
+  function generateImportsFor($entity, $pathTo, $nameFor)
+  {
+    $result['controller'] = 'import ' . $nameFor['mController'] . ' from \'@' . $pathTo['controller'] . '\';';
+    $result['model'] = 'import ' . $nameFor['mModel'] . ' from \'@' . $pathTo['model'] . '\';';
+    $result['dto'] = 'import { ' . $nameFor['mDto'] . ' } from \'@' . $pathTo['dto'] . '\';';
+    $result['interface'] = 'import ' . $nameFor['mInterface'] . ' from \'@' . $pathTo['interface'] . '\';';
+    $result['service'] = 'import ' . $nameFor['mService'] . ' from \'@' . $pathTo['service'] . '\';';
+    $result['sql'] = 'import { ' . $nameFor['mSqls'] . ' } from \'@' . $pathTo['sql'] . '\';';
+    return $result;
+  }
 }
 
 if (!function_exists("getRouteData")) {
-    function getRouteData($resourseName, $nameFor, $imports, $doAuthentication)
-    {
-        $cappedName = ucfirst($resourseName);
-        $authMiddleware = '';
-        if ($doAuthentication) {
-            $authMiddleware = 'import authMiddleware from \'../middlewares/auth.middleware\';';
-        }
+  function getRouteData($resourseName, $nameFor, $imports, $doAuthentication)
+  {
+    $cappedName = ucfirst($resourseName);
+    $authMiddleware = '';
+    if ($doAuthentication) {
+      $authMiddleware = 'import authMiddleware from \'../middlewares/auth.middleware\';';
+    }
 
-        $data = ''
-            . 'import { Router } from \'express\';
+    $data = ''
+      . 'import { Router } from \'express\';
 import Routes from \'@mis/interfaces/routes.interface\';
 
 ' . $authMiddleware . '
@@ -160,41 +165,41 @@ class ' . $nameFor['mRoute'] . ' implements Routes {
 		
 export default ' . $nameFor['mRoute'] . ';
 ';
-        return $data;
-    }
+    return $data;
+  }
 }
 
 if (!function_exists("getModelData")) {
-    function getModelData($resourseName, $params, $imports, $nameFor, $pathTo, $options = false)
-    {
-        $cappedResourseName = ucfirst($resourseName);
-        $tableName = $resourseName;
-        if (!empty($options)) {
-            if (!empty($options['tableName'])) {
-                $tableName = $options['tableName'];
-            }
-        }
-        $parameterDeclarations = '';
-        $parameterInitializations = '';
-        $whereConditions = '';
+  function getModelData($resourseName, $params, $imports, $nameFor, $pathTo, $options = false)
+  {
+    $cappedResourseName = ucfirst($resourseName);
+    $tableName = $resourseName;
+    if (!empty($options)) {
+      if (!empty($options['tableName'])) {
+        $tableName = $options['tableName'];
+      }
+    }
+    $parameterDeclarations = '';
+    $parameterInitializations = '';
+    $whereConditions = '';
 
-        if (!empty($params)) {
-            foreach ($params as $param) {
+    if (!empty($params)) {
+      foreach ($params as $param) {
 
-                $parameterDeclarations .= ('  
+        $parameterDeclarations .= ('  
 private ' . ($param->fieldName ? $param->fieldName : $param->name) . ': ' . $param->type . ';');
-                $parameterInitializations .= ('
+        $parameterInitializations .= ('
 ' . '       ' . $resourseName . 'Data.' . $param->name . ' ? this.' . ($param->fieldName ? $param->fieldName : $param->name) . ' = ' . $resourseName . 'Data.' . $param->name . ' : "";');
-                $whereConditions .= ('
+        $whereConditions .= ('
         if (filterQuery.' . $param->name . ') {
             whereCondition.push(`' . $tableName . '.' . ($param->fieldName ? $param->fieldName : $param->name) . ' = ' . (($param->type == "number") ? '' : '\'') . '${filterQuery.' . $param->name . '}' . (($param->type == "number") ? '' : '\'') . '`);
         }
                 ');
-            }
-        }
+      }
+    }
 
-        $data = ''
-            . 'import { MysqlResponse, MysqlService } from \'@mis/services/mysql.service\';
+    $data = ''
+      . 'import { MysqlResponse, MysqlService } from \'@mis/services/mysql.service\';
 import { isEmpty } from \'@mis/utils\';
 import { ' . $nameFor['mInterface'] . ', ' . $nameFor['filterInterface'] . ' } from \'@' . $pathTo['interface'] . '\';
 ' . $imports['sql'] . '
@@ -205,14 +210,14 @@ const ' . $nameFor['tSqls'] . ' = new ' . $nameFor['mSqls'] . '();
 
 class ' . $nameFor['mModel'] . ' {
 '
-            .
-            $parameterDeclarations . '
+      .
+      $parameterDeclarations . '
 
 constructor(' . $resourseName . 'Data?: ' . $nameFor['mInterface'] . ') {
     if (' . $resourseName . 'Data) {
-'.
-        $parameterInitializations
-            . '    }
+' .
+      $parameterInitializations
+      . '    }
     }
 
 public async create' . $cappedResourseName . '(' . $resourseName . 'Data: ' . $nameFor['mModel'] . '): Promise<MysqlResponse> {
@@ -301,84 +306,84 @@ public async deleteAll' . $cappedResourseName . '(): Promise<MysqlResponse> {
 
 }
 export default ' . $nameFor['mModel'] . ';';
-        return $data;
-    }
+    return $data;
+  }
 }
 
 if (!function_exists("getDtoData")) {
-    function getDtoData($resourseName, $params, $imports, $nameFor)
-    {
-        $parameterDeclarations = '';
+  function getDtoData($resourseName, $params, $imports, $nameFor)
+  {
+    $parameterDeclarations = '';
 
-        if (!empty($params)) {
-            foreach ($params as $param) {
-                $parameterDeclarations .= ('
+    if (!empty($params)) {
+      foreach ($params as $param) {
+        $parameterDeclarations .= ('
 	public ' . $param->name . '?: ' . $param->type . ';
 			');
-            }
-        }
+      }
+    }
 
-        $data = ''
-            . 'export class ' . $nameFor['mDto'] . ' {
+    $data = ''
+      . 'export class ' . $nameFor['mDto'] . ' {
 ' . $parameterDeclarations . '
 
 }
 ';
-        return $data;
-    }
+    return $data;
+  }
 }
 
 if (!function_exists("getInterfaceData")) {
-    function getInterfaceData($resourseName, $params, $imports, $nameFor)
-    {
-        $parameterDeclarations = '';
-        if (!empty($params)) {
-            foreach ($params as $param) {
-                $parameterDeclarations .= ('	' . $param->name . '?: ' . $param->type . ';
+  function getInterfaceData($resourseName, $params, $imports, $nameFor)
+  {
+    $parameterDeclarations = '';
+    if (!empty($params)) {
+      foreach ($params as $param) {
+        $parameterDeclarations .= ('	' . $param->name . '?: ' . $param->type . ';
 ');
-            }
-        }
+      }
+    }
 
-        $data = ''
-            . 'export interface ' . $nameFor['mInterface'] . ' {
+    $data = ''
+      . 'export interface ' . $nameFor['mInterface'] . ' {
 ' . $parameterDeclarations . '}
   ';
 
-        $data .= '
+    $data .= '
   '
-            . 'export interface ' . $nameFor['filterInterface'] . ' {
+      . 'export interface ' . $nameFor['filterInterface'] . ' {
 ' . $parameterDeclarations . '	offset?: number;
 	limit?: number;
 }
 ';
-        return $data;
-    }
+    return $data;
+  }
 }
 
 if (!function_exists("getSqlData")) {
-    function getSqlData($resourseName, $params, $imports, $nameFor, $options)
-    {
-        $tableName = $resourseName;
-        if (!empty($options)) {
-            if (!empty($options['tableName'])) {
-                $tableName = $options['tableName'];
-            }
-        }
+  function getSqlData($resourseName, $params, $imports, $nameFor, $options)
+  {
+    $tableName = $resourseName;
+    if (!empty($options)) {
+      if (!empty($options['tableName'])) {
+        $tableName = $options['tableName'];
+      }
+    }
 
-        $selectDeclarations = '';
+    $selectDeclarations = '';
 
-        if (!empty($params)) {
-            foreach ($params as $param) {
+    if (!empty($params)) {
+      foreach ($params as $param) {
 
-                $selectDeclarations .= ('
+        $selectDeclarations .= ('
                 ' . $tableName . '.' . $param->fieldName . ' AS ' . $param->name . ',');
-            }
-        }
+      }
+    }
 
-        $selectDeclarations = substr_replace($selectDeclarations, "", -1);
+    $selectDeclarations = substr_replace($selectDeclarations, "", -1);
 
-        $data = ''
-            . 'export class ' . $nameFor['mSqls'] . ' {
+    $data = ''
+      . 'export class ' . $nameFor['mSqls'] . ' {
     public countselect: string = `SELECT 
     count(' . $tableName . '.id) AS totalResults  
     FROM 
@@ -391,22 +396,144 @@ if (!function_exists("getSqlData")) {
      ' . $tableName . ' `;
 }
   ';
-        return $data;
-    }
+    return $data;
+  }
 }
 
 if (!function_exists("getControllerData")) {
-    function getControllerData($resourseName, $params, $imports, $nameFor, $pathTo)
-    {
-        $cappedResourseName = ucfirst($resourseName);
+  function getControllerData($resourseName, $params, $imports, $nameFor, $pathTo)
+  {
+    $cappedResourseName = ucfirst($resourseName);
 
-        $data = ''
-            . 'import { NextFunction, Request, Response } from \'express\';
+    $data = ''
+      . 'import { NextFunction, Request, Response } from \'express\';
 import { InternalServerError, ResultsNotFoundError } from \'@/mis/dtos/customerrors.dto\';
 import { ERROR_MSGS_GENERAL } from \'@/mis/constants/errors.enum\';
 import {
     mysqlManyToResultMany,
-    mysqlOneToResultOne,
+    mysqlOneToResultOne
+  } from \'@/mis/helpers/mysql.helper\';
+
+import { ' . $nameFor['mInterface'] . ', ' . $nameFor['filterInterface'] . ' } from \'@' . $pathTo['interface'] . '\';
+' . $imports['service'] . '
+
+class ' . $nameFor['mController'] . ' {
+private ' . $nameFor['tService'] . ' = new ' . $nameFor['mService'] . '();
+
+public create' . $cappedResourseName . ' = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    let ' . $resourseName . ' = req.body as ' . $nameFor['mInterface'] . ';
+    const insert' . $cappedResourseName . 'Data = await this.' . $nameFor['tService'] . '.create' . $cappedResourseName . 'Service(' . $resourseName . ');
+    if (insert' . $cappedResourseName . 'Data?.status) {
+      next({ data: mysqlOneToResultOne(insert' . $cappedResourseName . 'Data.data) });
+    } else {
+      throw new InternalServerError({ message: ERROR_MSGS_GENERAL?.CREATION_FAIL });
+    }
+  } catch (error) {
+   next({ error: error });
+  }
+};
+
+public get' . $cappedResourseName . ' = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const ' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . ' = req.query as ' . $nameFor['filterInterface'] . ';
+    const findAll' . $cappedResourseName . 'Data = await this.' . $nameFor['tService'] . '.get' . $cappedResourseName . 'Service(' . $resourseName . 'Filter);
+    if (findAll' . $cappedResourseName . 'Data?.status) {
+      next({ data: mysqlManyToResultMany(findAll' . $cappedResourseName . 'Data?.data) });
+    } else {
+      throw new ResultsNotFoundError({});
+    }
+  } catch (error) {
+    next({ error: error });
+  }
+};
+
+public get' . $cappedResourseName . 'ById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const ' . $resourseName . 'Id = req.params.id;
+    const findOne' . $cappedResourseName . 'Data = await this.' . $nameFor['tService'] . '.get' . $cappedResourseName . 'ByIdService(' . $resourseName . 'Id);
+    if (findOne' . $cappedResourseName . 'Data?.status) {
+      next({ data: mysqlOneToResultOne(findOne' . $cappedResourseName . 'Data?.data) });
+    } else {
+      throw new ResultsNotFoundError({});
+    }
+  } catch (error) {
+   next({ error: error });
+  }
+};
+
+public update' . $cappedResourseName . ' = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const ' . $resourseName . 'Id = req.params.id;
+    const ' . $resourseName . 'Data = req.body as ' . $nameFor['mInterface'] . ';
+    const update' . $cappedResourseName . 'Data = await this.' . $nameFor['tService'] . '.update' . $cappedResourseName . 'Service(' . $resourseName . 'Id, ' . $resourseName . 'Data);
+    if (update' . $cappedResourseName . 'Data?.status) {
+      next({ data: mysqlOneToResultOne(update' . $cappedResourseName . 'Data.data) });
+    } else {
+      throw new InternalServerError({ message: ERROR_MSGS_GENERAL?.UPDATION_FAIL });
+    }
+  } catch (error) {
+    next({ error: error });
+  }
+};
+
+public update' . $cappedResourseName . 'Where = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const ' . $resourseName . 'Data = req.body as ' . $nameFor['mInterface'] . ';
+    const ' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . ' = req.query as ' . $nameFor['filterInterface'] . ';
+    const update' . $cappedResourseName . 'Data = await this.' . $nameFor['tService'] . '.update' . $cappedResourseName . 'WhereService(' . $resourseName . 'Filter, ' . $resourseName . 'Data);
+    if (update' . $cappedResourseName . 'Data?.status) {
+      next({ data: update' . $cappedResourseName . 'Data.data });
+    } else {
+      throw new InternalServerError({ message: ERROR_MSGS_GENERAL?.UPDATION_FAIL });
+    }
+  } catch (error) {
+    next({ error: error });
+  }
+};
+
+public delete' . $cappedResourseName . ' = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const ' . $resourseName . 'Id = req.params.id;
+    const delete' . $cappedResourseName . 'Data = await this.' . $nameFor['tService'] . '.delete' . $cappedResourseName . 'Service(' . $resourseName . 'Id);
+    if (delete' . $cappedResourseName . 'Data?.status) {
+      next({ data: delete' . $cappedResourseName . 'Data?.data });
+    } else {
+      throw new InternalServerError({ message: ERROR_MSGS_GENERAL?.DELETION_FAIL });
+    }
+  } catch (error) {
+    next({ error: error });
+  }
+};
+
+public delete' . $cappedResourseName . 'Where = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const ' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . ' = req.query as ' . $nameFor['filterInterface'] . ';
+    const delete' . $cappedResourseName . 'Data = await this.' . $nameFor['tService'] . '.delete' . $cappedResourseName . 'WhereService(' . $resourseName . 'Filter);
+    if (delete' . $cappedResourseName . 'Data?.status) {
+      next({ data: delete' . $cappedResourseName . 'Data?.data });
+    } else {
+      throw new InternalServerError({ message: ERROR_MSGS_GENERAL?.DELETION_FAIL });
+    }
+  } catch (error) {
+    next({ error: error });
+  }
+};
+}
+
+export default ' . $nameFor['mController'] . ';
+';
+    return $data;
+  }
+}
+
+if (!function_exists("getServiceData")) {
+  function getServiceData($resourseName, $params, $imports, $nameFor, $pathTo)
+  {
+    $cappedResourseName = ucfirst($resourseName);
+
+    $data = ''
+      . 'import {
     resolveMultipleMysqlSelect,
     resolveMysqlCreate,
     resolveMysqlModifications,
@@ -417,10 +544,10 @@ import { FunctionResult } from \'@/mis/dtos/functionresult.dto\';
 import { ' . $nameFor['mInterface'] . ', ' . $nameFor['filterInterface'] . ' } from \'@' . $pathTo['interface'] . '\';
 ' . $imports['model'] . '
 
-class ' . $nameFor['mController'] . ' {
+class ' . $nameFor['mService'] . ' {
 private ' . $nameFor['tModel'] . ' = new ' . $nameFor['mModel'] . '();
 
-public create' . $cappedResourseName . 'Func = async (' . $resourseName . ': ' . $nameFor['mInterface'] . '): Promise<FunctionResult> => {
+public create' . $cappedResourseName . 'Service = async (' . $resourseName . ': ' . $nameFor['mInterface'] . '): Promise<FunctionResult> => {
   try {
     let result = new FunctionResult();
     result.status = false;
@@ -430,7 +557,7 @@ public create' . $cappedResourseName . 'Func = async (' . $resourseName . ': ' .
     if (insert' . $cappedResourseName . 'DataResolved?.status) {
       result.status = true;
       if (insert' . $cappedResourseName . 'DataResolved?.insertId) {
-        return this.get' . $cappedResourseName . 'ByIdFunc(insert' . $cappedResourseName . 'DataResolved?.insertId);
+        return this.get' . $cappedResourseName . 'ByIdService(insert' . $cappedResourseName . 'DataResolved?.insertId);
       }
     }
     return result;
@@ -439,7 +566,7 @@ public create' . $cappedResourseName . 'Func = async (' . $resourseName . ': ' .
   }
 };
 
-public get' . $cappedResourseName . 'Func = async (' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . '): Promise<FunctionResult> => {
+public get' . $cappedResourseName . 'Service = async (' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . '): Promise<FunctionResult> => {
   try {
     let result = new FunctionResult();
     result.status = false;
@@ -455,7 +582,7 @@ public get' . $cappedResourseName . 'Func = async (' . $resourseName . 'Filter: 
   }
 };
 
-public get' . $cappedResourseName . 'ByIdFunc = async (' . $resourseName . 'Id: string | number): Promise<FunctionResult> => {
+public get' . $cappedResourseName . 'ByIdService = async (' . $resourseName . 'Id: string | number): Promise<FunctionResult> => {
   try {
     let result = new FunctionResult();
     result.status = false;
@@ -472,7 +599,7 @@ public get' . $cappedResourseName . 'ByIdFunc = async (' . $resourseName . 'Id: 
   }
 };
 
-public update' . $cappedResourseName . 'Func = async (' . $resourseName . 'Id: string | number, ' . $resourseName . 'Data: ' . $nameFor['mInterface'] . '): Promise<FunctionResult> => {
+public update' . $cappedResourseName . 'Service = async (' . $resourseName . 'Id: string | number, ' . $resourseName . 'Data: ' . $nameFor['mInterface'] . '): Promise<FunctionResult> => {
   try {
     let result = new FunctionResult();
     result.status = false;
@@ -483,7 +610,7 @@ public update' . $cappedResourseName . 'Func = async (' . $resourseName . 'Id: s
     if (update' . $cappedResourseName . 'DataResolved?.status) {
       result.status = true;
       if (update' . $cappedResourseName . 'DataResolved?.result?.affectedRows > 0) {
-        return this.get' . $cappedResourseName . 'ByIdFunc(' . $resourseName . 'Id);
+        return this.get' . $cappedResourseName . 'ByIdService(' . $resourseName . 'Id);
       }
     }
     return result;
@@ -492,7 +619,7 @@ public update' . $cappedResourseName . 'Func = async (' . $resourseName . 'Id: s
   }
 };
   
-public update' . $cappedResourseName . 'WhereFunc = async (' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . ', ' . $resourseName . 'Data: ' . $nameFor['mInterface'] . '): Promise<FunctionResult> => {
+public update' . $cappedResourseName . 'WhereService = async (' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . ', ' . $resourseName . 'Data: ' . $nameFor['mInterface'] . '): Promise<FunctionResult> => {
   try {
     let result = new FunctionResult();
     result.status = false;
@@ -509,7 +636,7 @@ public update' . $cappedResourseName . 'WhereFunc = async (' . $resourseName . '
   }
 };
  
-public delete' . $cappedResourseName . 'Func = async (' . $resourseName . 'Id: string | number): Promise<FunctionResult> => {
+public delete' . $cappedResourseName . 'Service = async (' . $resourseName . 'Id: string | number): Promise<FunctionResult> => {
   try {
     let result = new FunctionResult();
     result.status = false;
@@ -526,7 +653,7 @@ public delete' . $cappedResourseName . 'Func = async (' . $resourseName . 'Id: s
   }
 };
     
-public delete' . $cappedResourseName . 'WhereFunc = async (' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . '): Promise<FunctionResult> => {
+public delete' . $cappedResourseName . 'WhereService = async (' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . '): Promise<FunctionResult> => {
   try {
     let result = new FunctionResult();
     result.status = false;
@@ -541,110 +668,9 @@ public delete' . $cappedResourseName . 'WhereFunc = async (' . $resourseName . '
     throw error;
   }
 };
-
-public create' . $cappedResourseName . ' = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    let ' . $resourseName . ' = req.body as ' . $nameFor['mInterface'] . ';
-    const insert' . $cappedResourseName . 'Data = await this.create' . $cappedResourseName . 'Func(' . $resourseName . ');
-    if (insert' . $cappedResourseName . 'Data?.status) {
-      next({ data: mysqlOneToResultOne(insert' . $cappedResourseName . 'Data.data) });
-    } else {
-      throw new InternalServerError({ message: ERROR_MSGS_GENERAL?.CREATION_FAIL });
-    }
-  } catch (error) {
-   next({ error: error });
-  }
-};
-
-public get' . $cappedResourseName . ' = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const ' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . ' = req.query as ' . $nameFor['filterInterface'] . ';
-    const findAll' . $cappedResourseName . 'Data = await this.get' . $cappedResourseName . 'Func(' . $resourseName . 'Filter);
-    if (findAll' . $cappedResourseName . 'Data?.status) {
-      next({ data: mysqlManyToResultMany(findAll' . $cappedResourseName . 'Data?.data) });
-    } else {
-      throw new ResultsNotFoundError({});
-    }
-  } catch (error) {
-    next({ error: error });
-  }
-};
-
-public get' . $cappedResourseName . 'ById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const ' . $resourseName . 'Id = req.params.id;
-    const findOne' . $cappedResourseName . 'Data = await this.get' . $cappedResourseName . 'ByIdFunc(' . $resourseName . 'Id);
-    if (findOne' . $cappedResourseName . 'Data?.status) {
-      next({ data: mysqlOneToResultOne(findOne' . $cappedResourseName . 'Data?.data) });
-    } else {
-      throw new ResultsNotFoundError({});
-    }
-  } catch (error) {
-   next({ error: error });
-  }
-};
-
-public update' . $cappedResourseName . ' = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const ' . $resourseName . 'Id = req.params.id;
-    const ' . $resourseName . 'Data = req.body as ' . $nameFor['mInterface'] . ';
-    const update' . $cappedResourseName . 'Data = await this.update' . $cappedResourseName . 'Func(' . $resourseName . 'Id, ' . $resourseName . 'Data);
-    if (update' . $cappedResourseName . 'Data?.status) {
-      next({ data: mysqlOneToResultOne(update' . $cappedResourseName . 'Data.data) });
-    } else {
-      throw new InternalServerError({ message: ERROR_MSGS_GENERAL?.UPDATION_FAIL });
-    }
-  } catch (error) {
-    next({ error: error });
-  }
-};
-
-public update' . $cappedResourseName . 'Where = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const ' . $resourseName . 'Data = req.body as ' . $nameFor['mInterface'] . ';
-    const ' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . ' = req.query as ' . $nameFor['filterInterface'] . ';
-    const update' . $cappedResourseName . 'Data = await this.update' . $cappedResourseName . 'WhereFunc(' . $resourseName . 'Filter, ' . $resourseName . 'Data);
-    if (update' . $cappedResourseName . 'Data?.status) {
-      next({ data: update' . $cappedResourseName . 'Data.data });
-    } else {
-      throw new InternalServerError({ message: ERROR_MSGS_GENERAL?.UPDATION_FAIL });
-    }
-  } catch (error) {
-    next({ error: error });
-  }
-};
-
-public delete' . $cappedResourseName . ' = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const ' . $resourseName . 'Id = req.params.id;
-    const delete' . $cappedResourseName . 'Data = await this.delete' . $cappedResourseName . 'Func(' . $resourseName . 'Id);
-    if (delete' . $cappedResourseName . 'Data?.status) {
-      next({ data: delete' . $cappedResourseName . 'Data?.data });
-    } else {
-      throw new InternalServerError({ message: ERROR_MSGS_GENERAL?.DELETION_FAIL });
-    }
-  } catch (error) {
-    next({ error: error });
-  }
-};
-
-public delete' . $cappedResourseName . 'Where = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const ' . $resourseName . 'Filter: ' . $nameFor['filterInterface'] . ' = req.query as ' . $nameFor['filterInterface'] . ';
-    const delete' . $cappedResourseName . 'Data = await this.delete' . $cappedResourseName . 'WhereFunc(' . $resourseName . 'Filter);
-    if (delete' . $cappedResourseName . 'Data?.status) {
-      next({ data: delete' . $cappedResourseName . 'Data?.data });
-    } else {
-      throw new InternalServerError({ message: ERROR_MSGS_GENERAL?.DELETION_FAIL });
-    }
-  } catch (error) {
-    next({ error: error });
-  }
-};
 }
-
-export default ' . $nameFor['mController'] . ';
+export default ' . $nameFor['mService'] . ';
 ';
-        return $data;
-    }
+    return $data;
+  }
 }
